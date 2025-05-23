@@ -1,3 +1,14 @@
 {
-  "template": "nextjs-shadcn"
+  "template": "nextjs-shadcn",
+  "build": {
+    "command": "npm run build",
+    "output": ".next"
+  },
+  "deploy": {
+    "runtime": "nodejs18",
+    "memory": "1024",
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
 }
