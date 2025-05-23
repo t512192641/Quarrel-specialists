@@ -3,7 +3,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { unoptimized: true },
+  output: 'standalone',
+  images: { 
+    unoptimized: true,
+    domains: ['localhost']
+  },
+  experimental: {
+    serverActions: true
+  },
   webpack: (config, { dev, isServer }) => {
     config.cache = { type: 'memory' };
     return config;
