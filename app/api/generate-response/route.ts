@@ -4,7 +4,11 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
-const API_KEY = process.env.API_KEY || "sk-aegsuslymdcshizzcuwbvwfjntaagsywvkejqfkuu";
+const API_KEY = process.env.API_KEY;
+
+if (!API_KEY) {
+  throw new Error('API_KEY environment variable is not set');
+}
 
 const systemPrompt = `# AI天津话吵架（文明幽默版）养成指南 
 
@@ -27,7 +31,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const userPrompt = `对方说："${opponentWords}"。请用天津话回击，要求幽默、有气势但不低俗。愤怒等级：${angerLevel}（1-10级）。请生成3条不同的回应，每条用换行分隔。`;
+  const userPrompt = '对方说："' + opponentWords + '"。请用天津话回击，要求幽默、有气势但不低俗。愤怒等级：' + angerLevel + '（1-10级）。请生成3条不同的回应，每条用换行分隔。';
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`,
+            "Authorization": "Bearer " + API_KEY,
           },
           body: JSON.stringify({
             model: "Qwen/QwQ-32B",
