@@ -2,3 +2,9 @@
 /api/* /api/:splat 200
 
 # Netlify will handle Next.js routing automatically with the plugin 
+
+# API路由重定向
+/api/*  /.netlify/functions/___netlify-handler  200
+
+# 客户端路由回退
+/*  /index.html  200 

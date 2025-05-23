@@ -203,12 +203,153 @@ data: {"type": "error", "message": "错误描述"}
 3. 设置环境变量（如需要）
 4. 自动部署完成
 
+### Netlify部署
+
+本项目已经配置了完整的Netlify部署支持，包括：
+
+#### 1. 自动部署配置
+
+项目根目录的`netlify.toml`文件已经配置完整的部署设置：
+
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"  # 指定构建产物目录
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"  # Next.js插件
+
+[functions]
+  node_bundler = "esbuild"
+
+# 环境变量配置
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+# API路由重定向配置
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# 处理客户端路由
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+#### 2. 部署步骤
+
+1. **推送代码到GitHub**
+   ```bash
+   git add .
+   git commit -m "更新Netlify配置"
+   git push origin main
+   ```
+
+2. **在Netlify中创建新站点**
+   - 登录 [Netlify](https://netlify.com)
+   - 点击"New site from Git"
+   - 选择你的GitHub仓库
+
+3. **配置构建设置**
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+   - Node version: `18`
+
+4. **部署**
+   - Netlify会自动检测`netlify.toml`配置
+   - 自动安装`@netlify/plugin-nextjs`插件
+   - 执行构建并部署
+
+#### 3. 部署配置说明
+
+**构建目录**: `.next`
+- Next.js的构建产物目录
+- 包含所有编译后的页面、API路由和静态资源
+
+**插件配置**: `@netlify/plugin-nextjs`
+- 已添加到`package.json`的`devDependencies`
+- 自动处理Next.js的SSR、API路由和静态文件
+- 支持Server-Sent Events (SSE)
+
+**重定向规则**:
+- API路由自动重定向到Netlify Functions
+- 客户端路由支持（SPA模式）
+- 正确的CORS头部设置
+
+#### 4. 环境变量设置（如需要）
+
+在Netlify管理面板中设置环境变量：
+- 进入站点设置 → Environment variables
+- 添加必要的API密钥或配置
+
+#### 5. 部署验证
+
+部署完成后，验证以下功能：
+- [ ] 主页面正常加载
+- [ ] AI回击生成功能正常
+- [ ] SSE流式传输工作正常
+- [ ] 历史记录保存功能正常
+- [ ] 主题切换功能正常
+
+#### 6. 常见问题解决
+
+**问题1**: "Failed to deploy because the build directory was not specified"
+- **解决**: 确保`netlify.toml`中有`publish = ".next"`配置
+
+**问题2**: API路由404错误
+- **解决**: 检查`@netlify/plugin-nextjs`插件是否正确安装
+- 确保重定向规则正确配置
+
+**问题3**: SSE连接失败
+- **解决**: 确保API路由运行时为`nodejs`而非`edge`
+- 检查CORS头部配置
+
+**问题4**: 构建失败
+- **解决**: 检查Node.js版本为18
+- 确保所有依赖正确安装
+
+### Railway部署
+
+1. 在Railway中创建新项目
+2. 连接GitHub仓库
+3. 设置环境变量
+4. 自动部署
+
 ### 自定义部署
 
 1. 构建项目: `npm run build`
 2. 启动服务: `npm start`
 3. 配置反向代理（如nginx）
 4. 设置HTTPS证书
+
+## 部署配置文件说明
+
+### netlify.toml
+Netlify部署的主配置文件，包含：
+- 构建命令和发布目录
+- Next.js插件配置
+- API路由重定向规则
+- 环境变量设置
+
+### public/_redirects
+备用重定向配置文件，与netlify.toml功能重复，作为fallback机制。
+
+### next.config.js
+Next.js框架配置，包含：
+- 图片优化设置
+- ESLint配置
+- 构建优化选项
+
+**重要**: 此项目需要API路由支持，不能使用静态导出模式(`output: 'export'`)。
 
 ## 许可证
 
