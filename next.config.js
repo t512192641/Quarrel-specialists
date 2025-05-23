@@ -12,14 +12,6 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     config.cache = { type: 'memory' };
     return config;
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: '/api/:path*'
-      }
-    ];
   }
 };
 
