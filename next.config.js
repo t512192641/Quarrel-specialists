@@ -3,20 +3,24 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'standalone',
   images: { 
     unoptimized: true,
     domains: ['localhost']
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000']
-    }
-  },
+  trailingSlash: true,
+  distDir: '.next',
   webpack: (config, { dev, isServer }) => {
     config.cache = { type: 'memory' };
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*'
+      }
+    ];
+  }
 };
 
 module.exports = nextConfig;

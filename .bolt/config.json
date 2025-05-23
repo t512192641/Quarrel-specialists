@@ -2,13 +2,20 @@
   "template": "nextjs-shadcn",
   "build": {
     "command": "npm run build",
-    "output": ".next"
+    "output": ".next",
+    "publishDir": ".next"
   },
   "deploy": {
     "runtime": "nodejs18",
     "memory": "1024",
     "env": {
       "NODE_ENV": "production"
+    },
+    "functions": {
+      "directory": ".netlify/functions"
     }
-  }
+  },
+  "plugins": [
+    "@netlify/plugin-nextjs"
+  ]
 }
