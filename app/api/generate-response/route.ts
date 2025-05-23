@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
         });
 
         if (!aiResponse.ok) {
-          throw new Error(\`API request failed with status \${aiResponse.status}\`);
+          throw new Error('API request failed with status ' + aiResponse.status);
         }
 
         const data = await aiResponse.json();
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
         
         // 发送3条回应
         for (let i = 0; i < responses.length; i++) {
-          const responseData = \`data: {"type": "response", "index": \${i}, "content": "\${responses[i].replace(/"/g, '\\"')}"}\n\n\`;
+          const responseData = 'data: {"type": "response", "index": ' + i + ', "content": "' + responses[i].replace(/"/g, '\\"') + '"}\n\n';
           controller.enqueue(encoder.encode(responseData));
           // 添加小延迟，让前端显示更自然
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
         
       } catch (error) {
         console.error("Error generating response:", error);
-        const errorData = \`data: {"type": "error", "message": "生成失败，请重试"}\n\n\`;
+        const errorData = 'data: {"type": "error", "message": "生成失败，请重试"}\n\n';
         controller.enqueue(encoder.encode(errorData));
         controller.close();
       }
@@ -96,11 +96,4 @@ export async function GET(req: NextRequest) {
       'X-Accel-Buffering': 'no'
     },
   });
-}
-          )
-        }
-      }
-    }
-  }
-  )
 }
