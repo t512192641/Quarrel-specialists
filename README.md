@@ -70,18 +70,18 @@ npm install
 ```
 
 ### 2. 启动开发服务器
-```bash
+    ```bash
 npm run dev
-```
+    ```
 
 ### 3. 访问应用
 打开浏览器访问 `http://localhost:3000`
 
 ### 4. 构建生产版本
-```bash
+    ```bash
 npm run build
 npm start
-```
+    ```
 
 ## API接口说明
 

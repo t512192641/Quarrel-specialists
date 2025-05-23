@@ -53,107 +53,107 @@ export async function GET(req: NextRequest) {
           const thinkingMessage = encoder.encode('data: {"type": "thinking", "message": "AI正在思考中..."}\n\n');
           controller.enqueue(thinkingMessage);
 
-          console.log(`[API] 开始调用AI接口，参数: ${opponentWords}, 愤怒值: ${angerLevel}`);
+      console.log(`[API] 开始调用AI接口，参数: ${opponentWords}, 愤怒值: ${angerLevel}`);
           
-          const aiResponse = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${API_KEY}`,
+      const aiResponse = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "Qwen/QwQ-32B",
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
             },
-            body: JSON.stringify({
-              model: "Qwen/QwQ-32B",
-              messages: [
-                {
-                  role: "system",
-                  content: systemPrompt,
-                },
-                {
-                  role: "user",
-                  content: `对方说了: "${opponentWords}"\n\n请给我3条不同的吵架回应，愤怒程度为${angerLevel}分（满分10分）。记住，保持文明幽默、不粗俗，使用天津方言特色，让我的反驳既精彩又有气势。请将3条回应分别列出。`,
-                },
-              ],
-              temperature: 0.7 + (angerLevel * 0.03),
-              max_tokens: 1000,
-            }),
-          });
+            {
+              role: "user",
+              content: `对方说了: "${opponentWords}"\n\n请给我3条不同的吵架回应，愤怒程度为${angerLevel}分（满分10分）。记住，保持文明幽默、不粗俗，使用天津方言特色，让我的反驳既精彩又有气势。请将3条回应分别列出。`,
+            },
+          ],
+          temperature: 0.7 + (angerLevel * 0.03),
+          max_tokens: 1000,
+        }),
+      });
 
-          console.log(`[API ${new Date().toLocaleTimeString()}] AI接口响应状态: ${aiResponse.status}`);
+      console.log(`[API ${new Date().toLocaleTimeString()}] AI接口响应状态: ${aiResponse.status}`);
 
-          if (!aiResponse.ok) {
-            let errorMessage = "AI服务暂时不可用";
-            try {
-              const errorData = await aiResponse.json() as SiliconFlowError;
-              if (errorData.error?.message) {
-                errorMessage = errorData.error.message;
-              }
-            } catch {
-              // If we can't parse the error JSON, use the default message
-            }
-            
+      if (!aiResponse.ok) {
+        let errorMessage = "AI服务暂时不可用";
+        try {
+          const errorData = await aiResponse.json() as SiliconFlowError;
+          if (errorData.error?.message) {
+            errorMessage = errorData.error.message;
+          }
+        } catch {
+          // If we can't parse the error JSON, use the default message
+        }
+        
             const errorMsg = encoder.encode(`data: {"type": "error", "message": "${errorMessage}"}\n\n`);
             controller.enqueue(errorMsg);
             controller.close();
             return;
-          }
+      }
 
-          const data = await aiResponse.json();
-          console.log(`[API ${new Date().toLocaleTimeString()}] 成功获取AI响应数据`);
-          
-          if (!data.choices?.[0]?.message?.content) {
+      const data = await aiResponse.json();
+      console.log(`[API ${new Date().toLocaleTimeString()}] 成功获取AI响应数据`);
+      
+      if (!data.choices?.[0]?.message?.content) {
             const errorMsg = encoder.encode('data: {"type": "error", "message": "AI返回的数据格式错误"}\n\n');
             controller.enqueue(errorMsg);
             controller.close();
             return;
-          }
+      }
 
-          const content = data.choices[0].message.content;
-          console.log(`[API ${new Date().toLocaleTimeString()}] AI原始响应内容: ${content.substring(0, 100)}...`);
+      const content = data.choices[0].message.content;
+      console.log(`[API ${new Date().toLocaleTimeString()}] AI原始响应内容: ${content.substring(0, 100)}...`);
           
-          const responses = content
-            .split(/\n\s*\d+[\.\)]\s*|\n\s*-\s*|\n\n+/)
-            .filter(Boolean)
-            .map((resp: string) => resp.trim())
-            .slice(0, 3);
+      const responses = content
+        .split(/\n\s*\d+[\.\)]\s*|\n\s*-\s*|\n\n+/)
+        .filter(Boolean)
+        .map((resp: string) => resp.trim())
+        .slice(0, 3);
           
-          console.log(`[API ${new Date().toLocaleTimeString()}] 分割后的响应数量: ${responses.length}`);
+      console.log(`[API ${new Date().toLocaleTimeString()}] 分割后的响应数量: ${responses.length}`);
           
-          if (responses.length > 0) {
-            console.log(`[API ${new Date().toLocaleTimeString()}] 第一条响应: ${responses[0].substring(0, 50)}...`);
-          }
+      if (responses.length > 0) {
+        console.log(`[API ${new Date().toLocaleTimeString()}] 第一条响应: ${responses[0].substring(0, 50)}...`);
+      }
 
-          if (responses.length < 3) {
-            const fullText = content.trim();
-            const partLength = Math.floor(fullText.length / 3);
-            const splitResponses = [
-              fullText.substring(0, partLength),
-              fullText.substring(partLength, partLength * 2),
-              fullText.substring(partLength * 2),
-            ];
-            
+      if (responses.length < 3) {
+        const fullText = content.trim();
+        const partLength = Math.floor(fullText.length / 3);
+        const splitResponses = [
+          fullText.substring(0, partLength),
+          fullText.substring(partLength, partLength * 2),
+          fullText.substring(partLength * 2),
+        ];
+        
             // 发送每个响应
-            for (let i = 0; i < splitResponses.length; i++) {
-              console.log(`[API ${new Date().toLocaleTimeString()}] 准备发送第${i+1}条分割响应`);
-              const escapedContent = splitResponses[i]
-                .replace(/\\/g, '\\\\')
-                .replace(/"/g, '\\"')
-                .replace(/\n/g, '\\n')
-                .replace(/\r/g, '\\r')
-                .replace(/\t/g, '\\t');
+        for (let i = 0; i < splitResponses.length; i++) {
+          console.log(`[API ${new Date().toLocaleTimeString()}] 准备发送第${i+1}条分割响应`);
+          const escapedContent = splitResponses[i]
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
               const responseData = encoder.encode(`data: {"type": "response", "index": ${i}, "content": "${escapedContent}"}\n\n`);
               controller.enqueue(responseData);
-              console.log(`[API ${new Date().toLocaleTimeString()}] 第${i+1}条响应已发送`);
-            }
-          } else {
+          console.log(`[API ${new Date().toLocaleTimeString()}] 第${i+1}条响应已发送`);
+        }
+      } else {
             // 发送每个响应
-            for (let i = 0; i < responses.length; i++) {
-              console.log(`[API ${new Date().toLocaleTimeString()}] 准备发送第${i+1}条响应`);
-              const escapedContent = responses[i]
-                .replace(/\\/g, '\\\\')
-                .replace(/"/g, '\\"')
-                .replace(/\n/g, '\\n')
-                .replace(/\r/g, '\\r')
-                .replace(/\t/g, '\\t');
+        for (let i = 0; i < responses.length; i++) {
+          console.log(`[API ${new Date().toLocaleTimeString()}] 准备发送第${i+1}条响应`);
+          const escapedContent = responses[i]
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
               const responseData = encoder.encode(`data: {"type": "response", "index": ${i}, "content": "${escapedContent}"}\n\n`);
               controller.enqueue(responseData);
               console.log(`[API ${new Date().toLocaleTimeString()}] 第${i+1}条响应已发送`);
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
           controller.enqueue(doneMessage);
           controller.close();
 
-        } catch (error) {
+    } catch (error) {
           console.error("[API] 处理过程中出错:", error);
           const errorMsg = encoder.encode(`data: {"type": "error", "message": "处理请求时出错"}\n\n`);
           controller.enqueue(errorMsg);
@@ -189,7 +189,7 @@ export async function GET(req: NextRequest) {
     
     console.log("[API] 响应头设置完成，准备发送数据");
 
-    return response;
+      return response;
 
   } catch (error) {
     console.error("Error:", error);
