@@ -4,8 +4,12 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
-const API_KEY = "sk-aegsuslymdcshizzcuwbvwfjntaagsywvkejmurzjkjqfkuu";
+const API_KEY = process.env.SILICON_FLOW_API_KEY || process.env.API_KEY;
 
+// 在生产环境中检查API密钥是否存在
+if (!API_KEY) {
+  console.error("[API] 错误：未找到API密钥。请在环境变量中设置 SILICON_FLOW_API_KEY 或 API_KEY");
+}
 
 interface SiliconFlowError {
   error?: {
